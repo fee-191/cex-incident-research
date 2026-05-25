@@ -1,52 +1,79 @@
 # Mixin Network — Phân tích sự cố $200M (09/2023)
 
-> **Loại tấn công:** Supply Chain / Cloud Infrastructure Compromise  
-> **Thiệt hại:** ~200M USD (400k ETH + BTC + ERC-20 assets)  
-> **Tác nhân nghi vấn:** Lazarus Group (Triều Tiên)
+> **Loại tấn công:** Supply Chain — Cloud Infrastructure Compromise  
+> **Thiệt hại:** ~$200M (400k+ ETH, BTC, và các ERC-20 assets)  
+> **Tác nhân:** Lazarus Group (DPRK) — xác nhận bởi on-chain analysis và FBI  
+> **Thời điểm:** ~04:00 UTC+8, ngày 23/09/2023
 
 ---
 
 ## 1. Tổng quan
 
-**Thời gian:** ~04:00 UTC+8, ngày 23/09/2023
+Mixin Network là giao thức Layer-2 phi tập trung, nhưng sử dụng **database Cloud tập trung** (Google Cloud Platform) để lưu trạng thái tài sản người dùng (User Ledger). Đây là điểm mâu thuẫn cốt lõi dẫn đến sự cố.
 
-**Đối tượng bị tấn công:** Cloud Database và Google Cloud Storage (GCS) của Mixin Network — nơi lưu trữ cấu hình hệ thống và trạng thái tài sản người dùng (User Ledger).
-
-**Hậu quả:**
-- Toàn bộ tài sản người dùng bị đóng băng trong thời gian dài
-- Mixin chỉ có thể hoàn trả tối đa 50% giá trị bằng tiền mặt
-- Hệ thống Mixin Kernel phải tạm dừng toàn bộ dịch vụ nạp/rút
-- Niềm tin vào mô hình "Light-node" và bảo mật Cloud của Mixin sụp đổ
-
-**Bản chất:** Đây là tấn công Supply Chain cấp độ hạ tầng. Thay vì bẻ khóa thuật toán đồng thuận, Lazarus nhắm vào **Control Plane** — nơi quản lý trạng thái ví và logic phê duyệt rút tiền.
+Thay vì tấn công thuật toán đồng thuận hay smart contract, Lazarus nhắm vào **Control Plane** — hệ thống Cloud quản lý logic phê duyệt và trạng thái ví. Sau khi compromise được máy trạm của một kỹ sư DevOps, attacker dành 17+ ngày reconnaissance trước khi thực hiện drain thực sự.
 
 ---
 
 ## 2. Kill Chain
 
-### Bước 1 — Initial Access (Phishing & Social Engineering)
+### 04:00 UTC+8, 23/09/2023 — Point of no return
 
-Một kỹ sư DevOps/SRE có đặc quyền cao bị tiếp cận qua LinkedIn dưới danh nghĩa nhà tuyển dụng kỹ thuật. Kỹ sư này được yêu cầu tải và chạy một project để làm bài kiểm tra kỹ năng.
+Nhưng để hiểu vụ này, cần xem chuỗi sự kiện bắt đầu từ trước đó nhiều tuần.
 
-**Payload:** `MC-Based-Stock-Invest-Simulator-main.zip` — chứa mã độc RCE thông qua thư viện **PyYAML không an toàn** (`yaml.load()` thay vì `yaml.safe_load()`), chiếm quyền điều khiển máy trạm.
+### Giai đoạn chuẩn bị — Initial Access
 
-### Bước 2 — Credential Harvesting & Persistence
+Một kỹ sư vận hành hệ thống (DevOps/SRE) có quyền truy cập cao vào GCP infrastructure của Mixin bị tiếp cận qua **LinkedIn job scam** — pattern điển hình của Lazarus Group từ 2019.
 
-- Mã độc quét máy trạm, thu giữ tệp cấu hình Cloud và khóa SSH
-- Hacker sử dụng **Session Token có thời hạn dài** để giả danh kỹ sư
-- **MFA bypass:** phiên làm việc đã được xác thực trước đó → token vẫn hợp lệ
+Kỹ sư được mời làm bài "technical assessment" bằng cách chạy một Python project:  
+**`MC-Based-Stock-Invest-Simulator-main.zip`**
 
-### Bước 3 — Database & Cloud Manipulation
+Project này chứa mã độc khai thác **PyYAML RCE** thông qua `yaml.load()` không dùng SafeLoader:
 
-- **Reconnaissance:** tải xuống mã nguồn frontend và logic phê duyệt
-- **Data Injection:** can thiệp vào Ledger database tập trung — nơi lưu số dư và logic xác thực
-- **Blind Signing:** sửa đổi file JavaScript production (`_app-.js`) trên Cloud Storage để thay đổi địa chỉ ví nhận trong payload giao dịch, **nhưng giữ nguyên hiển thị trên UI** của quản trị viên
+```python
+# Code trong project lure (vulnerable)
+import yaml
+config = yaml.load(open("config.yaml"))  # RCE vector
 
-### Bước 4 — Execution & Exfiltration
+# Safe version
+config = yaml.safe_load(open("config.yaml"))
+```
 
-- Khi nhân viên thực hiện lệnh nạp/rút định kỳ, hệ thống MPC tự động ký vào payload đã bị thay đổi địa chỉ
-- Tài sản chuyển thẳng đến ví của hacker, tẩu tán qua giao thức Multi-chain trong vài phút
-- Mixin phát hiện khi số dư ví nóng sụt giảm mạnh và Ledger không giải trình được → đóng băng cổng rút nhưng 200M USD đã tẩu tán qua Solana và Ethereum
+Payload tải Poseidon malware (framework MythicAgents) vào memory, kết nối C2, và bắt đầu thu thập credentials.
+
+### Credential Harvesting
+
+- Quét toàn bộ filesystem: GCP credentials file (`~/.config/gcloud/`), SSH keys, AWS/cloud config
+- **Session Token hijacking:** thu giữ session token có thời hạn dài → bypass MFA (phiên đã xác thực từ trước)
+- Duy trì persistence qua legitimate cloud credentials — không cần malware trên máy chủ GCP
+
+### GCP Reconnaissance (17+ ngày)
+
+Attacker dùng stolen credentials đăng nhập GCP qua legitimate gcloud CLI. Trong thời gian này:
+
+- Liệt kê IAM roles, policies, service accounts
+- Khám phá cấu trúc Cloud Storage buckets
+- **Download toàn bộ frontend codebase** (`app.mixin.one`)
+- Phân tích logic phê duyệt giao dịch trong JavaScript
+- Viết và test malicious payload JavaScript chỉ nhắm vào địa chỉ ví Mixin
+
+### Data Injection — 23/09/2023
+
+Hai attack vector được thực hiện đồng thời:
+
+**Vector 1 — JavaScript Manipulation:**  
+Ghi đè `_app-.js` trên Cloud Storage bucket. Payload inject thay đổi `recipient_address` trong giao dịch nhưng giữ nguyên hiển thị UI. Kết quả: người vận hành thấy địa chỉ đúng trên màn hình nhưng ký vào payload đã bị thay đổi (**Blind Signing**).
+
+**Vector 2 — Database Manipulation:**  
+Can thiệp trực tiếp vào Centralized User Ledger trên Cloud DB. Inject các bản ghi giao dịch giả, thay đổi logic xác thực balance và withdrawal approval.
+
+### Execution & Drain
+
+Khi nhân viên vận hành thực hiện lệnh nạp/rút định kỳ, hệ thống MPC của Mixin tự động ký vào payload đã bị thay đổi địa chỉ. Tài sản chuyển thẳng đến ví attacker.
+
+### Detection & Response
+
+Mixin phát hiện sự cố khi số dư ví nóng sụt giảm đột ngột trong khi Ledger nội bộ không ghi nhận lệnh tương ứng. Đóng băng cổng rút được kích hoạt — nhưng 200M USD đã tẩu tán qua Solana và Ethereum trong **vài phút**.
 
 ---
 
@@ -54,65 +81,127 @@ Một kỹ sư DevOps/SRE có đặc quyền cao bị tiếp cận qua LinkedIn 
 
 | Tactic | Technique | Hành động |
 |--------|-----------|-----------|
-| Initial Access | T1566.002 (Spearphishing Link) | Gửi dự án mã độc qua LinkedIn |
-| Execution | T1059 (Command & Scripting Interpreter) | Chạy loader Python chiếm quyền máy trạm |
-| Credential Access | T1528 (Steal Application Access Token) | Ăn cắp Session Token từ tệp credentials Cloud |
-| Persistence | T1078.004 (Valid Accounts: Cloud Accounts) | Dùng token hợp lệ truy cập Cloud console nhiều lần |
-| Impact | T1565.001 (Stored Data Manipulation) | Thay đổi JS tĩnh để thao túng địa chỉ ví nhận |
+| Initial Access | T1566.002 — Spearphishing Link | LinkedIn job scam → project độc hại |
+| Execution | T1059.006 — Python | Khai thác PyYAML RCE qua `yaml.load()` |
+| Persistence | T1078.004 — Cloud Accounts | Dùng stolen GCP session token |
+| Credential Access | T1528 — Steal Application Access Token | Thu giữ GCP credentials và session token |
+| Discovery | T1087 — Account Discovery | Enum GCP IAM roles và service accounts |
+| Discovery | T1083 — File and Directory Discovery | Khám phá Cloud Storage structure |
+| Collection | T1530 — Data from Cloud Storage | Download frontend JS codebase |
+| C2 | T1071 — Application Layer Protocol | HTTPS C2 callback |
+| Impact | T1565.001 — Stored Data Manipulation | Inject JS payload + DB manipulation |
+| Impact | T1657 — Financial Theft | Drain ~$200M qua manipulated transactions |
 
 ---
 
 ## 4. Root Causes
 
-**1. Privileged Access không được kiểm soát**  
-Kỹ sư bị tấn công có quyền sửa đổi trực tiếp Production Storage từ máy cá nhân, không qua CI/CD được kiểm soát.
+**1. Centralized Ledger trong kiến trúc "phi tập trung"**  
+Mixin xử lý giao dịch phi tập trung nhưng lưu User Ledger trên Cloud DB tập trung → Single Point of Failure. Attacker không cần bẻ khóa giao thức, chỉ cần compromise database.
 
-**2. Mô hình Hybrid sai lầm**  
-Mixin dùng Database Cloud tập trung để quản lý tài sản phi tập trung → Single Point of Failure. Mô hình an toàn hơn cần FROST/MPC với các mảnh khóa lưu ở các vùng hạ tầng độc lập (AWS + Azure + On-premise).
+**2. Developer có quyền direct-write vào Production**  
+Kỹ sư bị compromise có thể ghi trực tiếp lên GCP Cloud Storage từ máy cá nhân, không qua CI/CD pipeline được kiểm soát. Một máy bị phishing = toàn bộ production bị kiểm soát.
 
-**3. Thiếu Real-time Reconciliation**  
-Hệ thống không tự động so sánh số dư Ledger với Blockchain định kỳ. Nếu có, Safe Mode sẽ kích hoạt ngay khi 1M USD đầu tiên bị rút sai lệch.
+**3. Không có Integrity Check cho static assets**  
+JavaScript trên Cloud Storage không được ký số hay hash-verified trước khi serve. Thay đổi file JS không trigger bất kỳ alert nào.
 
-**4. Thiếu Integrity check cho dữ liệu tĩnh**  
-Không có cơ chế kiểm tra tính toàn vẹn của tệp cấu hình và JS trên Cloud Storage → hacker sửa đổi tự do mà không bị phát hiện ngay.
+**4. MPC không bảo vệ được Blind Signing**  
+MPC chống mất mát key vật lý nhưng không bảo vệ được khi payload giao dịch bị manipulate trước khi submit cho signing nodes. Các node MPC ký vào payload đã bị thay đổi mà không biết.
+
+**5. Không có Real-time Reconciliation**  
+Mixin không tự động so sánh on-chain balance với internal Ledger. Phát hiện chỉ xảy ra sau khi sự chênh lệch đủ lớn để nhân viên nhận ra — quá trễ.
 
 ---
 
-## 5. Lessons & Controls
+## 5. Controls
 
-### Active Defense
+### Static Asset Protection
+```yaml
+# CI/CD pipeline — enforce SRI
+build:
+  - compute_sha256_all_js_files
+  - sign_with_code_signing_key
+  - upload_to_s3_with_integrity_metadata
 
-- **Automated Kill-Switch:** đóng băng toàn bộ cổng rút tiền trong < 60 giây khi phát hiện bất thường
-- **Moving Target Defense (MTD):** Resharing định kỳ trong MPC để thay đổi mảnh khóa mà không thay đổi public key — vô hiệu hóa dữ liệu hacker đã thu thập
-- **Honey-Nonces:** phát hành giao dịch mồi có nonce bị "lệch bit" để phát hiện Lattice Attack
+serve:
+  - verify_integrity_before_response
+  - block_if_hash_mismatch
+  - alert_on_unexpected_change
+```
+
+**Subresource Integrity (SRI):**
+```html
+<script src="/static/_app.js"
+  integrity="sha256-abc123..."
+  crossorigin="anonymous"></script>
+```
+
+**S3/GCS Object Lock** — prevent overwrite:
+```bash
+aws s3api put-object-lock-configuration \
+  --bucket production-frontend \
+  --object-lock-configuration '{"ObjectLockEnabled":"Enabled"}'
+```
+
+### IAM — Zero Direct Access
+```json
+{
+  "Effect": "Deny",
+  "Action": ["s3:PutObject", "s3:DeleteObject"],
+  "Resource": "arn:aws:s3:::production-frontend/*",
+  "Condition": {
+    "StringNotEquals": {
+      "aws:PrincipalArn": "arn:aws:iam::ACCOUNT:role/cicd-deploy-role"
+    }
+  }
+}
+```
+
+### Architecture Fix — Distributed Ledger
+Thay thế Centralized Cloud DB bằng mô hình FROST/MPC với state được lưu ở nhiều vùng hạ tầng độc lập:
+```
+Mixin Node A (AWS Singapore)
+    + Mixin Node B (Azure Hong Kong)
+    + Mixin Node C (On-premise Seoul)
+    ──────────────────────────────
+    → Consensus required để update state
+    → Không có single cloud provider có thể compromise toàn bộ
+```
 
 ### Real-time Reconciliation
+```python
+async def reconcile_ledger(interval_minutes=5):
+    while True:
+        onchain_balance = await get_onchain_balance(hot_wallet)
+        ledger_balance = await get_internal_ledger_balance()
+        
+        if abs(onchain_balance - ledger_balance) > THRESHOLD:
+            await trigger_safe_mode()
+            await alert_security_team(
+                f"CRITICAL: Balance mismatch detected. "
+                f"On-chain: {onchain_balance}, Ledger: {ledger_balance}"
+            )
+        
+        await asyncio.sleep(interval_minutes * 60)
+```
 
-- **Ledger ↔ Blockchain:** tự động so sánh số dư nội bộ với Blockchain mỗi 5-10 phút; sai lệch → kích hoạt Safe Mode
-- **Static Asset Integrity:** kiểm tra hash của tệp tĩnh trên Cloud Storage; thay đổi ngoài CI/CD → chặn ngay
-
-### Infrastructure Hardening
-
-| Layer | Control |
-|-------|---------|
-| Wallet | Hot (<5%) qua MPC · Warm (2-of-3 multisig) · Cold (>90%, air-gapped, 3-of-5 approval) |
-| Workstation | Máy chuyên dụng: không email, không web, cấu hình đóng băng |
-| Network | VPN nội bộ + IP Whitelist + FIDO2/Passkey cho quản trị |
-| CI/CD | IAM Policy chặn `s3:PutObject` trực tiếp từ tài khoản cá nhân lên Production |
-
----
-
-## 6. So sánh với các sự cố khác
-
-| | Mixin (2023) | Bybit (2025) | Upbit (2019) |
-|---|---|---|---|
-| **Vector** | Cloud DB + JS manipulation | Supply chain JS | Hot wallet drain |
-| **Entry point** | DevOps workstation | Frontend engineer | Nội bộ không rõ |
-| **Root cause** | Centralized ledger + weak IAM | Compromised JS library | Hot wallet exposure |
-| **Attribution** | Lazarus Group | Lazarus Group | Lazarus Group |
-| **Thiệt hại** | $200M | $1.5B | $50M |
-| **Điểm chung** | MPC không bảo vệ được Control Plane khi bị Blind Signing | | |
+### Kill-Switch — < 60 seconds
+```
+Detection → Automated Safe Mode trigger → Pause all withdrawals
+         └→ Alert on-call security team
+         └→ Isolate affected wallet
+         └→ Begin forensic log collection
+```
 
 ---
 
-*Phân tích dựa trên các nguồn công khai: thông báo chính thức của Mixin Network, on-chain data, và báo cáo từ Chainalysis, Elliptic.*
+## 6. Lessons Learned
+
+1. **MPC là cần thiết nhưng không đủ** — Mixin có MPC, nhưng vẫn mất 200M USD. MPC bảo vệ key, không bảo vệ payload.
+2. **"Decentralized" protocol với centralized state là contradiction** — nếu có một Database có thể bị manipulate, coi như tập trung.
+3. **Privileged workstation là high-value target** — DevOps machine có production access cần được isolate và monitor ngang ngửa production server.
+4. **Static assets phải được treat như code** — JavaScript trên CDN/S3 CÓ THỂ bị thay đổi. Integrity checking là bắt buộc, không phải optional.
+
+---
+
+*Nguồn: Mixin Network official statement, SlowMist incident analysis, Chainalysis report, on-chain data từ Etherscan/Solscan, CertiK security analysis.*
