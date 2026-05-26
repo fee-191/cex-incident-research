@@ -46,7 +46,7 @@ Sau khi thực thi: loader Python download và chạy **Poseidon backdoor** (Myt
 - Browser saved passwords / cookies
 - Any cloud provider config files
 
-### 05–17/02/2025 — Reconnaissance & Preparation (17 ngày)
+### 05–19/02/2025 — Reconnaissance & Preparation (15 ngày)
 
 Attacker dùng stolen AWS credentials đăng nhập AWS infrastructure của Safe{Wallet}:
 
@@ -107,7 +107,7 @@ function interceptTransaction(txPayload) {
 }
 ```
 
-Kết quả: người ký thấy giao dịch hợp lệ trên màn hình, ký qua Ledger hardware wallet, nhưng thực tế ký vào payload đã bị thay đổi địa chỉ (**Blind Signing**).
+Kết quả: người ký thấy giao dịch hợp lệ trên màn hình, ký qua Ledger hardware wallet, nhưng thực tế ký vào payload đã bị thay đổi địa chỉ — đây là **Blind Signing**: hardware wallet hiển thị transaction hash thô, không decode nội dung ngữ nghĩa (địa chỉ nhận, số tiền).
 
 ### 21/02/2025, 14:13 UTC — Drain
 
@@ -311,9 +311,9 @@ deploy:
 
 ## Nguồn tham khảo
 
-- [FBI Public Service Announcement — TraderTraitor (I-022625-PSA)](https://www.ic3.gov/PSA/2025/PSA250226) — attribution Lazarus Group, timeline confirmation
-- [Mandiant / Google Cloud — Bybit Incident Analysis](https://cloud.google.com/blog/topics/threat-intelligence/bybit-heist-lazarus-group) — technical kill chain, Safe{Wallet} compromise details
-- [Safe{Wallet} Post-mortem Statement](https://safe.global/blog/safe-statement-on-bybit-incident) — official acknowledgment, JS injection confirmation
-- [Bybit Official Statement](https://www.bybit.com/en/announcements/article/bybit-security-incident-230101) — ETH amount, timeline
-- [ZachXBT On-chain Analysis](https://x.com/zachxbt) — on-chain tracing, laundering routes
-- [Chainalysis 2025 Crypto Crime Report](https://www.chainalysis.com/reports/crypto-crime-report-2025/) — Lazarus attribution, industry context
+- **FBI — TraderTraitor Advisory (Feb 2025):** IC3 cảnh báo về Lazarus Group / TraderTraitor nhắm vào DeFi/CEX — xác nhận attribution và TTP patterns
+- **Mandiant Incident Report (Feb 2025):** Google/Mandiant điều tra kỹ thuật Safe{Wallet} compromise — chi tiết JS injection, timeline
+- **Safe{Wallet} Official Statement:** Xác nhận developer machine bị compromise, JS file bị thay đổi trên S3
+- **Bybit Official Announcement:** Xác nhận số lượng tài sản bị drain, timeline, và phản ứng khẩn cấp
+- **ZachXBT On-chain Analysis:** Tracing 401k ETH qua các ví trung gian và laundering routes (đăng trên X/@zachxbt, Feb 2025)
+- **Chainalysis 2025 Crypto Crime Report:** Thống kê tổn thất, Lazarus attribution, industry impact
