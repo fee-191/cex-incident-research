@@ -307,4 +307,13 @@ deploy:
 
 ---
 
-*Nguồn: Mandiant incident report (Feb 2025), Safe{Wallet} post-mortem, FBI advisory, Bybit official statement, ZachXBT on-chain analysis, Chainalysis 2025 Crypto Crime Report.*
+---
+
+## Nguồn tham khảo
+
+- [FBI Public Service Announcement — TraderTraitor (I-022625-PSA)](https://www.ic3.gov/PSA/2025/PSA250226) — attribution Lazarus Group, timeline confirmation
+- [Mandiant / Google Cloud — Bybit Incident Analysis](https://cloud.google.com/blog/topics/threat-intelligence/bybit-heist-lazarus-group) — technical kill chain, Safe{Wallet} compromise details
+- [Safe{Wallet} Post-mortem Statement](https://safe.global/blog/safe-statement-on-bybit-incident) — official acknowledgment, JS injection confirmation
+- [Bybit Official Statement](https://www.bybit.com/en/announcements/article/bybit-security-incident-230101) — ETH amount, timeline
+- [ZachXBT On-chain Analysis](https://x.com/zachxbt) — on-chain tracing, laundering routes
+- [Chainalysis 2025 Crypto Crime Report](https://www.chainalysis.com/reports/crypto-crime-report-2025/) — Lazarus attribution, industry context
