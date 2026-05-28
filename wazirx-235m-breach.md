@@ -13,7 +13,7 @@ WazirX là sàn giao dịch crypto lớn nhất Ấn Độ. Sự cố 07/2024 c�
 
 WazirX sử dụng **Liminal** — một công ty custody và multi-party computation — để quản lý và ký giao dịch cold wallet. Lazarus Group compromise Liminal's signing interface, thao túng UI để các approver của WazirX ký vào giao dịch malicious mà tưởng là routine.
 
-**Key difference vs Bybit:** WazirX và Liminal đến nay vẫn còn tranh cãi về lỗi thuộc bên nào — Liminal claim hệ thống của họ an toàn, WazirX claim đã bị Liminal's UI thao túng.
+**Key difference vs Bybit:** WazirX và Liminal đến nay vẫn còn tranh cãi: Liminal khẳng định hệ thống của họ không bị compromise; WazirX cho rằng signing interface của Liminal đã bị thao túng từ bên ngoài.
 
 ---
 
@@ -85,7 +85,7 @@ Bybit học được bài học từ WazirX và các vụ tương tự, nhưng v
 
 ---
 
-## 5. Controls
+## 6. Controls
 
 - **Independent calldata verification:** Approver phải verify raw `calldata` trực tiếp trên blockchain explorer — không chỉ nhìn vào UI của custody provider
 - **Disable upgrade proxy cho cold wallet:** Safe contract không nên có upgrade capability cho production wallets

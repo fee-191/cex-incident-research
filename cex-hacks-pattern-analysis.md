@@ -11,7 +11,7 @@
 | Tổng số vụ phân tích | 31 vụ |
 | Tổng thiệt hại ước tính | **~$6.8 tỷ USD** |
 | Khoảng thời gian | 2014 – 2025 |
-| Nhóm tấn công phổ biến nhất | Lazarus Group (DPRK) — ~$3.1B |
+| Nhóm tấn công phổ biến nhất | Lazarus Group (DPRK) — ~$3.5B+ |
 | Vụ lớn nhất | Ronin Network (2022) — $625M |
 | Vụ gần nhất trong danh sách | Bybit (2025) — $1.5B |
 

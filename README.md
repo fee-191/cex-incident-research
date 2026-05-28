@@ -2,7 +2,7 @@
 
 Phân tích kỹ thuật các sự cố bảo mật lớn trong ngành crypto exchange (CEX) — attack chain, MITRE ATT&CK mapping, root cause, và controls để phòng ngừa.
 
-Nội dung dựa trên nghiên cứu 31 vụ hack CEX/crypto từ 2014–2025. Tài liệu phục vụ mục đích học tập và cải thiện bảo mật. Nguồn: thông báo chính thức của các sàn liên quan, FBI advisories, on-chain data từ Chainalysis, ZachXBT, Elliptic, và các nhà nghiên cứu bảo mật độc lập.
+Nội dung dựa trên nghiên cứu 31 vụ hack CEX/crypto từ 2014–2025 (bao gồm vụ Bybit 02/2025). Tài liệu phục vụ mục đích học tập và cải thiện bảo mật. Nguồn: thông báo chính thức của các sàn liên quan, FBI advisories, on-chain data từ Chainalysis, ZachXBT, Elliptic, và các nhà nghiên cứu bảo mật độc lập.
 
 ---
 

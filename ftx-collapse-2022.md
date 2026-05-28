@@ -1,7 +1,7 @@
 # FTX — Phân tích sự cố $400M+ (11/2022)
 
 > **Loại tấn công:** Insider Threat + Unauthorized Access (concurrent với exchange collapse)  
-> **Thiệt hại:** ~$400M+ trong vụ hack; ~$8B+ trong vụ collapse (fraud)  
+> **Thiệt hại:** ~$400M trong vụ hack (unauthorized drain); ~$8B trong vụ collapse (fraud by executives)  
 > **Tác nhân:** Nội bộ FTX (confirmed) + Unknown hacker (concurrent, may be insider)  
 > **Thời điểm:** 11/11/2022 — cùng ngày FTX nộp đơn phá sản
 
