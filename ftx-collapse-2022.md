@@ -32,7 +32,7 @@ Hàng triệu USD bắt đầu chảy ra khỏi FTX wallets:
 - Transactions broadcast trong vài giờ sau bankruptcy filing
 - Tiền nhanh chóng được swap sang ETH rồi laundered
 
-### Real-time detection
+### Real-time Detection
 
 Cộng đồng crypto trên Twitter theo dõi on-chain và cảnh báo trong vài tiếng. FTX Telegram admin ban đầu thông báo đây là hack, yêu cầu user xóa FTX app.
 

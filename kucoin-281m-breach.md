@@ -17,13 +17,13 @@ Tuy nhiên, root cause vẫn là cổ điển: **hot wallet private key bị l�
 
 ## 2. Kill Chain
 
-### Initial Compromise
+### Initial Access
 
 KuCoin chưa công bố chi tiết về initial access vector. Dựa trên pattern Lazarus:
 - Likely spearphishing nhắm vào kỹ thuật viên có quyền truy cập key management
 - Hoặc insider threat (KuCoin không confirm, nhưng không loại trừ)
 
-### Key Exfiltration
+### Credential Harvesting
 
 Private keys của nhiều hot wallets (BTC, ETH, ERC-20, EOS, XRP) bị thu giữ và exfil về C2 infrastructure của attacker.
 
