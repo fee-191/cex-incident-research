@@ -1,29 +1,52 @@
 # CEX Incident Research
 
-Phân tích kỹ thuật các sự cố bảo mật lớn trong ngành crypto exchange (CEX) — attack chain, root cause, và controls để phòng ngừa.
+Phân tích kỹ thuật các sự cố bảo mật lớn trong ngành crypto exchange (CEX) — attack chain, MITRE ATT&CK mapping, root cause, và controls để phòng ngừa.
 
-Tài liệu được viết với mục đích học tập và cải thiện bảo mật. Nguồn: thông báo chính thức của các sàn liên quan, on-chain data, báo cáo từ Chainalysis, Elliptic, Mandiant, và các nhà nghiên cứu bảo mật độc lập.
+Nội dung dựa trên nghiên cứu 31 vụ hack CEX/crypto từ 2014–2025. Tài liệu phục vụ mục đích học tập và cải thiện bảo mật. Nguồn: thông báo chính thức của các sàn liên quan, FBI advisories, on-chain data từ Chainalysis, ZachXBT, Elliptic, và các nhà nghiên cứu bảo mật độc lập.
 
 ---
 
-## Incidents
+## Pattern Analysis
 
-| Sự cố | Thiệt hại | Loại tấn công | Tác nhân |
-|-------|-----------|---------------|---------|
-| [Bybit (02/2025)](./bybit-1.5b-breach.md) | $1.5B | Supply Chain — Safe{Wallet} JS Injection | Lazarus Group |
-| [Mixin Network (09/2023)](./mixin-network-200m-breach.md) | $200M | Cloud Infrastructure Compromise | Lazarus Group |
-| [Upbit (11/2019)](./upbit-50m-breach.md) | $50M | Hot Wallet Drain — Key Compromise | Lazarus / Andariel |
+**[📊 31 CEX Hacks — Pattern Analysis (2014–2025)](./cex-hacks-pattern-analysis.md)**  
+Phân tích tổng hợp 31 vụ: attack vector taxonomy, Lazarus Group deep dive, timeline trends, và defense framework rút ra từ toàn bộ dataset.
 
-**Điểm chung:** Cả 3 vụ đều do Lazarus Group thực hiện. Vector tấn công không phải là giao thức hay smart contract mà là **con người** — developer, DevOps, admin có đặc quyền cao.
+---
+
+## Individual Incident Analyses
+
+Phân tích kỹ thuật chi tiết theo kill chain + MITRE ATT&CK:
+
+| Sự cố | Năm | Thiệt hại | Vector | File |
+|-------|-----|-----------|--------|------|
+| Bybit | 2025 | $1.5B | Supply chain JS injection | [bybit-1.5b-breach.md](./bybit-1.5b-breach.md) |
+| WazirX | 2024 | $235M | Custody provider UI tampering | [wazirx-235m-breach.md](./wazirx-235m-breach.md) |
+| Mixin Network | 2023 | $200M | Cloud infra + JS manipulation | [mixin-network-200m-breach.md](./mixin-network-200m-breach.md) |
+| Ronin/Axie | 2022 | $625M | Validator key compromise | [ronin-625m-breach.md](./ronin-625m-breach.md) |
+| FTX | 2022 | $400M+ | Insider + unauthorized drain | [ftx-collapse-2022.md](./ftx-collapse-2022.md) |
+| KuCoin | 2020 | $281M | Private key leak | [kucoin-281m-breach.md](./kucoin-281m-breach.md) |
+| Coincheck | 2018 | $530M | Hot wallet, no multisig | [coincheck-530m-breach.md](./coincheck-530m-breach.md) |
+| Upbit | 2019 | $50M | Hot wallet drain | [upbit-50m-breach.md](./upbit-50m-breach.md) |
+
+---
+
+## Key Insights
+
+**Tổng thiệt hại 31 vụ: ~$6.8 tỷ USD**
+
+**Top attack vectors:**
+- 🔑 Private key / hot wallet compromise — 12/31 vụ (~39%)
+- 🌉 Bridge / cross-chain exploit — 7/31 vụ (~23%)
+- 📦 Supply chain / third-party — 4/31 vụ (~13%)
+
+**Lazarus Group (DPRK) — ~$3.5B+ confirmed:**  
+Nhóm tấn công chịu trách nhiệm lớn nhất. Pattern nhất quán: LinkedIn job scam → malicious project → credential theft → months-long recon → drain. Không tấn công protocol/cryptography — nhắm vào **người vận hành** và **UI signing**.
+
+> *"Khi attacker không thể bẻ key, họ tấn công người cầm key hoặc UI mà người cầm key nhìn vào."*
 
 ---
 
 ## Mục đích
 
-Mỗi bài phân tích gồm:
-- **Kill Chain** — từng bước tấn công, có timeline cụ thể
-- **MITRE ATT&CK Mapping** — technique ID và hành động tương ứng
-- **Root Causes** — nguyên nhân gốc rễ cho phép tấn công xảy ra
-- **Controls** — kiểm soát kỹ thuật cụ thể để phòng ngừa
+Kết quả nghiên cứu được áp dụng vào thiết kế security rules tại **[security-template](https://github.com/fee-191/security-template)** — bộ Semgrep rules tùy chỉnh cho CEX, phát hiện các anti-pattern dẫn đến các sự cố trên.
 
-Kết quả nghiên cứu được áp dụng vào thiết kế security rules tại [security-template](https://github.com/fee-191/security-template) — bộ Semgrep rules tùy chỉnh cho CEX, phát hiện các anti-pattern dẫn đến các sự cố trên.
