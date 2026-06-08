@@ -48,7 +48,7 @@ Nhóm tấn công chịu trách nhiệm lớn nhất. Pattern nhất quán: Link
 
 ## Mục đích
 
-Kết quả nghiên cứu được áp dụng vào thiết kế security rules tại **[security-template](https://github.com/fee-191/security-template)** (44 Semgrep rules, 5 ngôn ngữ). Xem thêm: **[lynxguard](https://github.com/fee-191/lynxguard)** — SOC platform phát hiện các attack patterns trên — bộ Semgrep rules tùy chỉnh cho CEX, phát hiện các anti-pattern dẫn đến các sự cố trên.
+Kết quả nghiên cứu được áp dụng vào thiết kế security rules tại **[security-template](https://github.com/fee-191/security-template)** — Semgrep rules tùy chỉnh cho CEX, phát hiện các anti-pattern dẫn đến các sự cố trên. Xem thêm: **[lynxguard](https://github.com/fee-191/lynxguard)** — SOC platform đồ án tốt nghiệp, **[wazuh-cex-rules](https://github.com/fee-191/wazuh-cex-rules)** — Wazuh detection rules cho CEX.
 
 
 <!-- updated: 2026-06-08 -->
