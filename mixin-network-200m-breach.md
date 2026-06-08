@@ -31,12 +31,13 @@ Kỹ sư được mời làm bài "technical assessment" bằng cách chạy m�
 Project này chứa mã độc khai thác **PyYAML RCE** thông qua `yaml.load()` không dùng SafeLoader:
 
 ```python
-# Code trong project lure (vulnerable)
+# Vulnerable — PyYAML <5.1 hoặc khi dùng Loader=yaml.Loader explicitly
 import yaml
-config = yaml.load(open("config.yaml"))  # RCE vector
+config = yaml.load(open("config.yaml"))                    # UNSAFE: PyYAML <5.1 default
+config = yaml.load(open("config.yaml"), Loader=yaml.Loader)  # UNSAFE: explicit full loader
 
-# Safe version
-config = yaml.safe_load(open("config.yaml"))
+# Safe
+config = yaml.safe_load(open("config.yaml"))               # Safe: no Python object deserialization
 ```
 
 Payload tải Poseidon malware (framework MythicAgents) vào memory, kết nối C2, và bắt đầu thu thập credentials.

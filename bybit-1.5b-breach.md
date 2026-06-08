@@ -28,14 +28,14 @@ Project: **`MC-Based-Stock-Invest-Simulator-main.zip`**
 Payload thực thi RCE thông qua PyYAML unsafe deserialization:
 
 ```python
-# Vulnerable code trong project lure
+# Vulnerable — PyYAML <5.1 (hoặc dùng Loader=yaml.Loader explicitly)
 import yaml
-data = yaml.load(open("config.yaml"))       # UNSAFE — RCE vector
-data = yaml.load(stream, Loader=yaml.Loader)  # UNSAFE
+data = yaml.load(stream, Loader=yaml.Loader)   # UNSAFE: full deserialization, RCE
+data = yaml.load(stream)                        # UNSAFE: PyYAML <5.1 default
 
-# Safe alternative
-data = yaml.safe_load(open("config.yaml"))   # Safe
-data = yaml.load(stream, Loader=yaml.SafeLoader)  # Safe
+# Safe
+data = yaml.safe_load(stream)                  # Safe: subset of YAML, no Python object
+data = yaml.load(stream, Loader=yaml.SafeLoader)  # Safe: explicit
 ```
 
 Sau khi thực thi: loader Python download và chạy **Poseidon backdoor** (Mythic framework) trong RAM, kết nối C2 tại `getstockprice[.]com`, exfil credentials.

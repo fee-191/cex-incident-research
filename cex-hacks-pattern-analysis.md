@@ -192,11 +192,12 @@ Pattern: Lazarus nhắm third-party → sàn không biết bị tấn công
 
 > **MPC và multi-sig là điều kiện cần, không phải đủ.**
 >
+> Mixin ($200M): Dùng database Cloud tập trung — MPC bảo vệ key nhưng không bảo vệ payload bị manipulate ở tầng Control Plane.
 > Ronin ($625M): Lazarus compromise 5/9 validator keys — đủ ngưỡng multisig.
 > Bybit ($1.5B): Lazarus không cần key — manipulate UI để signers ký payload sai.
 > WazirX ($235M): Compromise custody provider Liminal để thao túng signing UI.
 >
-> Pattern: Khi attacker không thể bẻ key, họ tấn công **người cầm key** hoặc **UI mà người cầm key nhìn vào**.
+> Pattern: Khi attacker không thể bẻ key, họ tấn công **người cầm key**, **Control Plane**, hoặc **UI mà người cầm key nhìn vào**.
 
 ---
 
